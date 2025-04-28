@@ -1,0 +1,47 @@
+% Initialize Data - Read CSV and apply variables from vars.mat
+function initialize_data()
+    % File paths
+    csv_file_path = 'thruster_data.csv';
+    vars_file_path = 'vars.mat';
+    
+    % Read the CSV file containing the PWM-force-voltage relationship
+    data = readmatrix(csv_file_path);
+    
+    % Extract the relevant columns
+    voltage_values = unique(data(:, 1));  % Voltage is in column A (1st column)
+    pwm_values = unique(data(:, 2));      % PWM is in column B (2nd column)
+    force = data(:, 7);       % Force is in column G (7th column)
+
+    % Create a grid of the voltage and pwm values
+    [pwm_grid, voltage_grid] = meshgrid(pwm_values, voltage_values);
+
+    force_values = zeros([])
+    for i = 1:size(pwm_grid)
+
+    end
+
+    % Reshape the force data to correspond to the grid
+    force_values = reshape(force, size(pwm_grid));
+    
+    % Convert force from Kgf to Newtons (1 kgf = 9.81 N)
+    force_values = force_values * 9.81;
+
+    % Save the loaded data into workspace variables
+    assignin('base', 'voltage_values', voltage_values);
+    assignin('base', 'pwm_values', pwm_values);
+    assignin('base', 'force_values', force_values);
+    
+    % Load additional variables from vars.mat (if exists)
+    if isfile(vars_file_path)
+        vars = load(vars_file_path);  % Load the .mat file
+        % Apply variables from vars.mat to the workspace
+        field_names = fieldnames(vars);
+        for i = 1:numel(field_names)
+            assignin('base', field_names{i}, vars.(field_names{i}));
+        end
+    else
+        warning('vars.mat file not found at: %s', vars_file_path);
+    end
+    
+    disp('Data initialization complete.');
+end
